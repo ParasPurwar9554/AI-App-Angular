@@ -1,0 +1,32 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">Login</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="dismiss()"></button>
+</div>
+
+<div class="modal-body">
+    <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+  {{ errorMessage }}
+</div>
+  <form (ngSubmit)="loginData(loginForm)" #loginForm="ngForm">
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input id="username"  name="username" type="text" class="form-control"  [(ngModel)]="username" placeholder="Enter username" required #usernameRef="ngModel"/>
+       <div *ngIf="usernameRef.invalid && usernameRef.touched" class="text-danger mt-1">
+        UserName is required.
+       </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input id="password" name="password" type="password" class="form-control" [(ngModel)]="password" placeholder="Enter password" required #passwordRef="ngModel"/>
+       <div *ngIf="passwordRef.invalid && passwordRef.touched" class="text-danger mt-1">
+        Password is required.
+       </div>
+    </div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="dismiss()">Cancel</button>
+  <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
+</div>
+</form>
+</div>
