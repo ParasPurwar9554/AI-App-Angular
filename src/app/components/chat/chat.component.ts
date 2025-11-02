@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
 import { ChatService } from '../../services/chat.service';
 import { LoginService } from '../../services/login.service';
 
@@ -9,27 +11,36 @@ import { LoginService } from '../../services/login.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css'
+  styleUrls: ['./chat.component.css']
 })
 export class ChatComponent {
   userPrompt: string = '';
-  messages: { text: string, isUser: boolean }[] = [];
+  messages: { text: SafeHtml, isUser: boolean }[] = [];
 
-  constructor(private chatService: ChatService, private LoginService: LoginService) { }
+  constructor(
+    private chatService: ChatService,
+    private loginService: LoginService,
+    private sanitizer: DomSanitizer
+  ) {}
 
-  sendMessage() {
-    if (this.LoginService.checkLoginUser()) {
-      if (this.userPrompt.trim()) {
-        this.messages.push({ text: this.userPrompt, isUser: true });
-        this.chatService.connectToChatModel(this.userPrompt).subscribe((response: any) => {
-          this.messages.push({ text: response.data, isUser: false });
-          console.log(response);
-        });
-        this.userPrompt = '';
-      }
-    } else {
-      alert('Please log in to send messages.');
+  async sendMessage() {
+  if (this.loginService.checkLoginUser()) {
+    if (this.userPrompt.trim()) {
+      this.messages.push({ text: this.userPrompt, isUser: true });
+
+      // Call API
+      this.chatService.connectToChatModel(this.userPrompt).subscribe(async (response: any) => {
+        const markdownText = response.data;
+        const html = await marked.parse(markdownText);
+        const safeHtml = this.sanitizer.bypassSecurityTrustHtml(html as string);
+        this.messages.push({ text: safeHtml, isUser: false });
+      });
+
+      this.userPrompt = '';
     }
+  } else {
+    alert('Please log in to send messages.');
   }
+}
 
 }
